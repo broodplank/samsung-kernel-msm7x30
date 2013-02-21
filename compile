@@ -3,4 +3,5 @@
 export ARCH=arm
 export CROSS_COMPILE=arm-eabi-
 export PATH=$PATH:~/toolchains/arm-eabi-linaro-4.6.2/bin/
+export PATH=$PATH:~/toolchains/arm-eabi-4.4.3/bin/
 make -j8
