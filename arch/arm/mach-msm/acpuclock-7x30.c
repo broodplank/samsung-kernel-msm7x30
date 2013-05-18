@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2007 Google, Inc.
  * Copyright (c) 2007-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2013 broodplank.net
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -94,6 +95,14 @@ static struct pll pll2_tbl[] = {
 	{  53, 1, 3, 0 }, /* 1024 MHz */
 	{ 125, 0, 1, 1 }, /* 1200 MHz */
 	{  73, 0, 1, 0 }, /* 1401 MHz */
+        {  79, 1, 3, 0 }, /* 79 * 19,2MHz = 1516,8 MHz */
+ 	{  81, 1, 3, 0 }, /* 81 * 19,2MHz = 1555,2 MHz */
+	{  84, 1, 3, 0 }, /* 84 * 19,2MHz = 1612,8 MHz */
+	{  86, 1, 3, 0 }, /* 86 * 19,2MHz = 1651,2 MHz */
+	{  89, 1, 3, 0 }, /* 89 * 19,2MHz = 1708,8 MHz */
+	{  92, 1, 3, 0 }, /* 92 * 19,2MHz = 1766,4 MHz */
+	{  94, 1, 3, 0 }, /* 94 * 19,2MHz = 1804,8 MHz */
+	{  95, 1, 3, 0 }, /* 95 * 19,2MHz = 1824,0 MHz */
 };
 
 /* Use negative numbers for sources that can't be enabled/disabled */
@@ -133,6 +142,14 @@ static struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{ 1, 1024000, PLL_2, 3, 0, UINT_MAX, 1200, VDD_RAW(1200), &pll2_tbl[1]},
 	{ 1, 1200000, PLL_2, 3, 0, UINT_MAX, 1200, VDD_RAW(1200), &pll2_tbl[2]},
 	{ 1, 1401600, PLL_2, 3, 0, UINT_MAX, 1250, VDD_RAW(1250), &pll2_tbl[3]},
+	{ 1, 1516800, PLL_2, 3, 0, UINT_MAX, 1225, VDD_RAW(1225), &pll2_tbl[4]},
+	{ 1, 1555200, PLL_2, 3, 0, UINT_MAX, 1225, VDD_RAW(1225), &pll2_tbl[5]},
+	{ 1, 1612800, PLL_2, 3, 0, UINT_MAX, 1250, VDD_RAW(1250), &pll2_tbl[6]},
+	{ 1, 1651200, PLL_2, 3, 0, UINT_MAX, 1250, VDD_RAW(1250), &pll2_tbl[7]},
+	{ 1, 1708800, PLL_2, 3, 0, UINT_MAX, 1275, VDD_RAW(1275), &pll2_tbl[8]},
+	{ 1, 1766400, PLL_2, 3, 0, UINT_MAX, 1275, VDD_RAW(1275), &pll2_tbl[9]},
+	{ 1, 1804800, PLL_2, 3, 0, UINT_MAX, 1300, VDD_RAW(1300), &pll2_tbl[10]},
+	{ 1, 1824000, PLL_2, 3, 0, UINT_MAX, 1325, VDD_RAW(1325), &pll2_tbl[11]},
 	{ 0 }
 };
 
@@ -202,8 +219,7 @@ static void acpuclk_set_src(const struct clkctl_acpu_speed *s)
 	mb();
 }
 
-static int acpuclk_7x30_set_rate(int cpu, unsigned long rate,
-				 enum setrate_reason reason)
+static int acpuclk_7x30_set_rate(int cpu, unsigned long rate, enum setrate_reason reason)
 {
 	struct clkctl_acpu_speed *tgt_s, *strt_s;
 	int res, rc = 0;
@@ -329,6 +345,12 @@ static unsigned long acpuclk_7x30_get_rate(int cpu)
 		return 0;
 }
 
+unsigned long clk_get_max_axi_khz(void)
+{
+	return MAX_AXI_KHZ;
+}
+EXPORT_SYMBOL(clk_get_max_axi_khz);
+
 /*----------------------------------------------------------------------------
  * Clock driver initialization
  *---------------------------------------------------------------------------*/
@@ -449,14 +471,17 @@ static inline void setup_cpufreq_table(void) { }
  * Truncate the frequency table at the current PLL2 rate and determine the
  * backup PLL to use when scaling PLL2.
  */
-void __devinit pll2_fixup(void)
+void __init pll2_fixup(void)
 {
 	struct clkctl_acpu_speed *speed = acpu_freq_tbl;
+
+#ifndef CONFIG_MSM_CPU_FREQ_OVERCLOCKING
 	u8 pll2_l = readl_relaxed(PLL2_L_VAL_ADDR) & 0xFF;
 
 	for ( ; speed->acpu_clk_khz; speed++) {
 		if (speed->src != PLL_2)
 			backup_s = speed;
+
 		if (speed->pll_rate && speed->pll_rate->l == pll2_l) {
 			speed++;
 			speed->acpu_clk_khz = 0;
@@ -466,6 +491,12 @@ void __devinit pll2_fixup(void)
 
 	pr_err("Unknown PLL2 lval %d\n", pll2_l);
 	BUG();
+#else
+	for ( ; speed->acpu_clk_khz; speed++) {
+		if (speed->src != PLL_2)
+			backup_s = speed;
+	}
+#endif
 }
 
 #define RPM_BYPASS_MASK	(1 << 3)
@@ -525,3 +556,50 @@ static int __init acpuclk_7x30_init(void)
 	return platform_driver_register(&acpuclk_7x30_driver);
 }
 postcore_initcall(acpuclk_7x30_init);
+
+
+#ifdef CONFIG_CPU_FREQ_VDD_LEVELS
+#define VDD_MIN_UV_MV  750U
+#define VDD_MAX_UV_MV 1450U
+
+ssize_t acpuclk_get_vdd_levels_str(char *buf)
+{
+	int i, len = 0;
+	if (buf)
+	{
+		mutex_lock(&drv_state.lock);
+		for (i = 0; acpu_freq_tbl[i].acpu_clk_khz; i++)
+		{
+			if(acpu_freq_tbl[i].use_for_scaling==1)
+			{
+				len += sprintf(buf + len, "%8u: %4d\n", acpu_freq_tbl[i].acpu_clk_khz, acpu_freq_tbl[i].vdd_mv);
+			}
+		}
+		mutex_unlock(&drv_state.lock);
+	}
+	return len;
+}
+
+void acpuclk_set_vdd(unsigned int khz, int vdd)
+{
+	int i;
+	unsigned int new_vdd;
+	vdd = vdd / V_STEP * V_STEP;
+	mutex_lock(&drv_state.lock);
+	for (i = 0; acpu_freq_tbl[i].acpu_clk_khz; i++)
+	{
+		if (acpu_freq_tbl[i].use_for_scaling == 1)
+		{
+			if (khz == 0)
+				new_vdd = min(max((unsigned int)(acpu_freq_tbl[i].vdd_mv + vdd), VDD_MIN_UV_MV), VDD_MAX_UV_MV);
+			else if (acpu_freq_tbl[i].acpu_clk_khz == khz)
+				new_vdd = min(max((unsigned int)vdd, VDD_MIN_UV_MV), VDD_MAX_UV_MV);
+			else continue;
+
+			acpu_freq_tbl[i].vdd_mv = new_vdd;
+			acpu_freq_tbl[i].vdd_raw = VDD_RAW(new_vdd);
+		}
+	}
+	mutex_unlock(&drv_state.lock);
+}
+#endif
