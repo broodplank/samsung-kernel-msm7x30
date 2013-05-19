@@ -1613,6 +1613,13 @@ config MSM_CPU_FREQ_MIN
 	depends on MSM_CPU_FREQ_SET_MIN_MAX
 	default 245760
 
+config MSM_CPU_FREQ_OVERCLOCKING
+	bool "Enable support for CPU overclocking"
+	depends on ARCH_MSM7X30
+	default y
+	help
+	  Enabling this option allow to use all overclock frequencies.
+
 endif # CPU_FREQ_MSM
 
 config MSM_CPU_AVS
