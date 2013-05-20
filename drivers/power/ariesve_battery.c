@@ -1084,31 +1084,6 @@ static int msm_batt_check_recharging(void)
 
 static int msm_batt_check_level(int battery_level)
 {
-	/*
-	if (msm_batt_info.batt_full_check)
-	{
-		battery_level = 100;
-	}
-	*/
-	if ( (msm_batt_info.batt_full_check == 0) && (battery_level == 100) )
-	{
-		battery_level = 99;	// not yet fully charged
-	}
-/*
-	else if ( (battery_level == 0)
-#ifdef MAX17043_FUEL_GAUGE
-		&& (is_alert == 0)
-#endif
-		)
-	{
-		battery_level = 1;	// not yet alerted low battery (do not power off yet)
-	}
-
-	if (msm_batt_info.battery_voltage< msm_batt_info.voltage_min_design)
-	{
-		battery_level = 0;
-	}
-*/
 	if (msm_batt_info.batt_capacity != battery_level)
 	{
 		pr_info("[BATT] %s: Battery level changed ! (%d -> %d)\n", __func__, msm_batt_info.batt_capacity, battery_level);
@@ -1135,8 +1110,7 @@ static int msm_batt_average_temperature(int temp_adc)
 		return 0;
 
 	if (count == 0 && temp_adc == 150)
-		return 0;	// hanapark: 부팅 초기 vbatt task 초기화 이전 값은 무시하도록 방어 코드 추가 
-
+		return 0;	
 #ifdef __BATT_TEST_DEVICE__
 		if (temp_test_adc)
 			return temp_test_adc;
