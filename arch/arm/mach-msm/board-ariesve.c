@@ -1,5 +1,4 @@
 /* Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
- * Copyright (c) 2013 broodplank.net
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -143,10 +142,7 @@ EXPORT_SYMBOL(sec_class);
 struct device *switch_dev;
 EXPORT_SYMBOL(switch_dev);
 
-#define MSM_PMEM_SF_SIZE          0x0800000 //     8.388.608 Bytes =   8 MB
-#define MSM_PMEM_ADSP_SIZE        0x2800000 //    41.943.040 Bytes =  40 MB
-#define MSM_PMEM_AUDIO_SIZE       0x0100000 //     1.048.576 Bytes =   1 MB
-
+#define MSM_PMEM_SF_SIZE	0x1A00000
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MSM_FB_PRIM_BUF_SIZE	(800 * 480 * 4 * 3) /* 4bpp * 3 Pages */
 #else
@@ -1851,7 +1847,7 @@ void msm_snddev_poweramp_off_tty(void)
 }
 
 static struct regulator_bulk_data snddev_regs[] = {
-	{ .supply = "gp4", .min_uV = 2600000, .max_uV = 2600000 },
+	{ .supply = "gp4", .min_uV = 1800000, .max_uV = 2600000 },
 	{ .supply = "ncp", .min_uV = 1800000, .max_uV = 1800000 },
 };
 
@@ -3420,66 +3416,42 @@ static struct i2c_board_info touchkey_info[] __initdata = {
 
 #endif
 
+static struct regulator_bulk_data oliver_tsp_regs[] = {
+	{ .supply = "gp4", .min_uV = 1800000, .max_uV = 2600000 },
+	{ .supply = "xo_out", .min_uV = 3000000, .max_uV = 3000000 },
+};
+
 static int oliver_tsp_ldo_on(void)
 {
-	int rc = 0;
-	struct regulator *vreg_ldo2, *vreg_ldo10 = NULL;
+	int rc;
 
-	printk("[TSP] M1 TSP LDO init\n");
-	// VREG_TSP_1.8V
-	vreg_ldo2 = regulator_get(NULL, "gp4");		
-	if (IS_ERR(vreg_ldo2)) {
-		rc = PTR_ERR(vreg_ldo2);
-		pr_err("%s: gp6 vreg get failed (%d)\n",
-		       __func__, rc);
-		return rc;
-	}
-
-	// VREG_TSP_A3.0V
-	// Oliver Board rev univ01 ldo10 is gp11
-	vreg_ldo10 = regulator_get(NULL, "xo_out"); 
-	if (IS_ERR(vreg_ldo10)) {
-		rc = PTR_ERR(vreg_ldo10);
-		pr_err("%s: gp9 vreg get failed (%d)\n",
-		       __func__, rc);
-		return rc;
-	}
-	rc =  regulator_set_voltage(vreg_ldo2, 1800000,1800000);
+	rc = regulator_bulk_get(NULL, ARRAY_SIZE(oliver_tsp_regs), oliver_tsp_regs);
 	if (rc) {
-		pr_err("%s: vreg LDO2 set level failed (%d)\n",
-		       __func__, rc);
-		return rc;
+		pr_err("%s: could not get regulators: %d\n", __func__, rc);
+		goto out;
 	}
 
-	rc = regulator_set_voltage(vreg_ldo10, 2850000,2850000);
+	rc = regulator_bulk_set_voltage(ARRAY_SIZE(oliver_tsp_regs), oliver_tsp_regs);
 	if (rc) {
-		pr_err("%s: vreg LDO10 set level failed (%d)\n",
-		       __func__, rc);
-		return rc;
+		pr_err("%s: could not set voltages: %d\n", __func__, rc);
+		goto regs_free;
 	}
 
-	rc = regulator_enable(vreg_ldo2);
-
+	rc = regulator_bulk_enable(ARRAY_SIZE(oliver_tsp_regs), oliver_tsp_regs);
 	if (rc) {
-		pr_err("%s: LDO2 vreg enable failed (%d)\n",
-		       __func__, rc);
-		return rc;
+		pr_err("%s: could not enable regulators: %d\n", __func__, rc);
+		goto regs_free;
 	}
 
-	rc = regulator_enable(vreg_ldo10);
+	mdelay(5); /* ensure power is stable */
 
-	if (rc) {
-		pr_err("%s: LDO10 vreg enable failed (%d)\n",
-		       __func__, rc);
-		return rc;
-	}
+	return 0;
 
-	mdelay(5);		/* ensure power is stable */
-
+regs_free:
+	regulator_bulk_free(ARRAY_SIZE(oliver_tsp_regs), oliver_tsp_regs);
+out:
 	return rc;
-
 }
-
 #endif
 
 #if defined (CONFIG_SENSOR_CE147)
@@ -3524,7 +3496,7 @@ static struct msm_gpio optnav_config_data[] = {
 
 static struct regulator_bulk_data optnav_regulators[] = {
 	{ .supply = "gp7", .min_uV = 1800000, .max_uV = 1800000 },
-	{ .supply = "gp4", .min_uV = 2600000, .max_uV = 2600000 },
+	{ .supply = "gp4", .min_uV = 1800000, .max_uV = 2600000 },
 	{ .supply = "gp9", .min_uV = 1800000, .max_uV = 1800000 },
 	{ .supply = "usb", .min_uV = 3300000, .max_uV = 3300000 },
 };
@@ -5755,7 +5727,7 @@ static int mbp_init_regs(struct device *dev)
 {
 	struct regulator_bulk_data regs[] = {
 		/* Analog and I/O regs */
-		{ .supply = "gp4",  .min_uV = 2600000, .max_uV = 2600000 },
+		{ .supply = "gp4",  .min_uV = 1800000, .max_uV = 2600000 },
 		{ .supply = "s3",   .min_uV = 1800000, .max_uV = 1800000 },
 		/* RF regs */
 		{ .supply = "s2",   .min_uV = 1300000, .max_uV = 1300000 },
@@ -6139,7 +6111,7 @@ static struct mmc_platform_data msm7x30_sdc1_data = {
 };
 #else
 static struct mmc_platform_data msm7x30_sdc1_data = {
-	.ocr_mask	= MMC_VDD_165_195 | MMC_VDD_20_21 | MMC_VDD_21_22,
+	.ocr_mask	= MMC_VDD_165_195 | MMC_VDD_27_28 | MMC_VDD_28_29,
 	.translate_vdd	= msm_sdcc_setup_power,
 	.mmc_bus_width  = MMC_CAP_4_BIT_DATA,
 	.status	        = wlan_status,
@@ -7257,3 +7229,4 @@ MACHINE_START(ARIESVE, "GT-I9001 Board")
 	.handle_irq = vic_handle_irq,
 	.fixup = msm7x30_fixup,
 MACHINE_END
+
