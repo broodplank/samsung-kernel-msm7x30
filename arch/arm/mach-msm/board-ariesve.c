@@ -142,7 +142,9 @@ EXPORT_SYMBOL(sec_class);
 struct device *switch_dev;
 EXPORT_SYMBOL(switch_dev);
 
-#define MSM_PMEM_SF_SIZE	0x1A00000
+#define MSM_PMEM_SF_SIZE          0x0800000 //     8.388.608 Bytes =   8 MB
+#define MSM_PMEM_ADSP_SIZE        0x2800000 //    41.943.040 Bytes =  40 MB
+#define MSM_PMEM_AUDIO_SIZE       0x0100000 //     1.048.576 Bytes =   1 MB 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MSM_FB_PRIM_BUF_SIZE	(800 * 480 * 4 * 3) /* 4bpp * 3 Pages */
 #else
