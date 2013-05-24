@@ -15,21 +15,7 @@ make clean
 echo " "
 echo "Make kernel..."
 echo " "
-make -j16
-
-echo " "
-echo "Cleaning possible previous remains"
-echo " "
-rm -f build/zImage
-rm -f build/boot.img-ramdisk/lib/modules/dhd.ko
-rm -f build/boot.img-ramdisk/lib/modules/cifs.ko
-
-echo " "
-echo "Copying zImage and modules"
-echo " "
-cp arch/arm/boot/zImage build/zImage
-cp drivers/net/wireless/bcmdhd/dhd.ko build/boot.img-ramdisk/lib/modules/dhd.ko
-cp fs/cifs/cifs.ko build/boot.img-ramdisk/lib/modules/cifs.ko
+make -j8
 
 echo " "
 echo "Done!"

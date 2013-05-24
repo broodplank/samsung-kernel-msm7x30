@@ -1160,8 +1160,11 @@ endif # CONFIG_MODULES
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	vmlinux System.map \
-                .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map build/zImage build/boot.img-ramdisk/lib/modules/PLACEHOLDER build/boot.img-ramdisk/lib/modules/dhd.ko build/boot.img-ramdisk/lib/modules/cifs.ko
-
+                .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map \
+		build/4.1.x/zImage build/4.2.x/zImage build/4.1.x/output/PLACEHOLDER build/4.2.x/output/PLACEHOLDER \
+		build/4.1.x/boot.img-ramdisk/lib/modules/cifs.ko build/4.1.x/boot.img-ramdisk/lib/modules/dhd.ko build/4.1.x/ramdisk.gz build/4.1.x/boot.img \
+		build/4.2.x/boot.img-ramdisk/lib/modules/cifs.ko build/4.2.x/boot.img-ramdisk/lib/modules/dhd.ko build/4.2.x/boot.img  build/4.2.x/ramdisk.gz 
+		  
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config usr/include include/generated          \
                   arch/*/include/generated
