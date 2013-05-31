@@ -393,6 +393,15 @@ extern struct cpufreq_governor cpufreq_gov_hyper;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_LULZACTIVEW)
 extern struct cpufreq_governor cpufreq_gov_lulzactivew;
 #define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_lulzactivew)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_INTELLIDEMAND)
+extern struct cpufreq_governor cpufreq_gov_intellidemand;
+#define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_intellidemand)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_BRAZILIANWAX)
+extern struct cpufreq_governor cpufreq_gov_brazilianwax;
+#define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_brazilianwax)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ADAPTIVE)
+extern struct cpufreq_governor cpufreq_gov_adaptive;
+#define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_adaptive)
 #endif
 
 
