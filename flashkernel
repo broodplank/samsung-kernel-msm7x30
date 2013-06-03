@@ -32,6 +32,13 @@ echo "Pushing boot.img to sdcard..."
 ./adb push 4.1.x/output/boot.img /sdcard/boot.img
 echo "Flashing boot.img to mmcblk0p8..."
 ./adb shell dd if=/sdcard/boot.img of=/dev/block/mmcblk0p8
+echo "Do you want to wipe cache ? ( y / n )"
+read wipecache
+if [ ${wipecache} == "y" ];
+then
+ ./adb shell rm /cache/dalvik-cache/*
+ ./adb shell rm /data/dalvik-cache/*
+fi;
 echo "Rebooting Phone..."
 ./adb reboot
 cd ..
@@ -46,6 +53,13 @@ echo "Pushing boot.img to sdcard..."
 ./adb push 4.2.x/output/boot.img /sdcard/boot.img
 echo "Flashing boot.img to mmcblk0p8..."
 ./adb shell dd if=/sdcard/boot.img of=/dev/block/mmcblk0p8
+echo "Do you want to wipe cache ? ( y / n )"
+read wipecache
+if [ ${wipecache} == "y" ];
+then
+ ./adb shell rm /cache/dalvik-cache/*
+ ./adb shell rm /data/dalvik-cache/*
+fi;
 echo "Rebooting Phone..."
 ./adb reboot
 ;;
