@@ -1,7 +1,7 @@
 broodKernel v4.x 
 Branch: 3.4.x
-Current Version: broodKernel v4.1
-Current Branch: 3.4.46
+Current Version: broodKernel v4.5
+Current Branch: 3.4.48
 
 For Ariesve (i9001) or all other msm7x30 devices with some modifications.
 
@@ -33,9 +33,22 @@ Initial Setup & Running Xconfig:
 
 
 Building:
-- ./build_clean 
-or
-- ./build_dirty
+
+All in one:
+- ./buildall (xconfig/build_clean/build_bootimg/flashkernel)
+
+Or manually:
+- ./build_clean & ./build_dirty
+
+
+Building boot images:
+
+- ./build_bootimg
+
+
+Flashing kernel:
+
+- ./flashkernel
 
 
 

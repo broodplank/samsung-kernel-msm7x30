@@ -17,7 +17,8 @@ DHDCFLAGS = -Wall -Wstrict-prototypes -Dlinux -DLINUX -DBCMDRIVER             \
 #################
 
 DHDCFLAGS += -DCUSTOMER_HW4
-DHDCFLAGS += -DBLOCK_IPV6_PACKET -DPASS_IPV4_SUSPEND
+#DHDCFLAGS += -DBLOCK_IPV6_PACKET
+DHDCFLAGS += -DPASS_IPV4_SUSPEND
 DHDCFLAGS += -DSUPPORT_DEEP_SLEEP
 DHDCFLAGS += -DSIMPLE_MAC_PRINT
 
@@ -113,3 +114,4 @@ DHDOFILES := bcmsdh.o bcmsdh_linux.o bcmsdh_sdmmc.o bcmsdh_sdmmc_linux.o \
 
 obj-$(CONFIG_BCMDHD) += dhd.o
 dhd-objs += $(DHDOFILES)
+
