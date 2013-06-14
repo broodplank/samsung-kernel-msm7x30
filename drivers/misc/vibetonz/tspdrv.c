@@ -355,7 +355,7 @@ int vibe_init(void)
 			printk(KERN_ERR "Failed to request GPIO_VIBTONE_PWM! \n");
 	}
 
-	// VDD_VIB_3.0V
+	// VDD_VIB_2.8V
 	vreg_ldo19 = regulator_get(NULL, "wlan2");
 	if (IS_ERR(vreg_ldo19)) {
 		rc = PTR_ERR(vreg_ldo19);
@@ -364,7 +364,7 @@ int vibe_init(void)
 		return rc;
 	}
 
-	rc = regulator_set_voltage(vreg_ldo19,3000000,3000000);
+	rc = regulator_set_voltage(vreg_ldo19,2800000,2800000);
 	if (rc) {
 		pr_err("%s: vreg LDO19 set level failed (%d)\n",
 		       __func__, rc);
